@@ -12,8 +12,9 @@ import psycopg2
 
 from lib import read_config, l
 
-PRODUCTS = ['raiffeisen_loan_referral', 'raiffeisen_loan_lead_referral', 'raiffeisen_credit_card_referral',
-            'raiffeisen_credit_card_lead_referral']
+#PRODUCTS = ['raiffeisen_loan_referral', 'raiffeisen_loan_lead_referral', 'raiffeisen_credit_card_referral',
+#            'raiffeisen_credit_card_lead_referral']
+PRODUCTS = ['alfabank_100_v2']
 BAD_FIELDS = ['_id','owner_id','client','callcenter_status_code']
 
 STATUSES = {0: 'Новая заявка', 100: 'Заявка отправлена в очередь', 110: 'Введен СМС код',
@@ -76,13 +77,13 @@ for i, product in enumerate(PRODUCTS):
         else:
             fields_rez = [str(coll['owner_id']), str(coll['owner_id'])]
         for field in fields:
-            if field == 'history':
-                fields_rez.append(str(coll.get(field)))
-                #print('\nhistory\n', str(coll.get(field)))
-            elif field == 'state_code':
+            if field == 'state_code':
                 fields_rez.append(STATUSES[l(coll.get(field))])
             else:
-                fields_rez.append(coll.get(field))
+                if str(type(coll.get(field))).find('str') < 0 and str(type(coll.get(field))).find('int') < 0:
+                    fields_rez.append(str(coll.get(field)))
+                else:
+                    fields_rez.append(coll.get(field))
         #print('\n\nfields_rez\n',fields_rez)
         ws_rez[i].append(fields_rez)
 wb_rez.save(datetime.now().strftime('%Y-%m-%d_%H-%M') + 'отчеты.xlsx')
