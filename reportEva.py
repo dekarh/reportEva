@@ -12,16 +12,16 @@ import psycopg2
 
 from lib import read_config, l
 
-#PRODUCTS = ['raiffeisen_loan_referral', 'raiffeisen_loan_lead_referral', 'raiffeisen_credit_card_referral',
-#            'raiffeisen_credit_card_lead_referral']
-PRODUCTS = ['alfabank_100_v2']
+PRODUCTS = ['raiffeisen_loan_referral', 'raiffeisen_loan_lead_referral', 'raiffeisen_credit_card_referral',
+            'raiffeisen_credit_card_lead_referral']
+#PRODUCTS = ['alfabank_100_v2']
 BAD_FIELDS = ['_id','owner_id','client','callcenter_status_code']
 
 STATUSES = {0: 'Новая заявка', 100: 'Заявка отправлена в очередь', 110: 'Введен СМС код',
             120: 'Запрошена повторная СМС', 130: 'В процессе', 140: 'Одобрена', 150: 'Предварительно одобрена',
             160: 'Заявка заполнена', 200: 'Завершено', 210: 'Займ выдан', 220: 'Займ выдан повторно',
             230: 'Займ выдан через call-центр', 400: 'Удалена', 410: 'Неизвестный статус', 420: 'Ошибка выгрузки',
-            430: 'Отказ', 450: 'Закрыта',460: 'Истек срок действия решения Банка', 470: 'Ошибка в заявке',
+            430: 'Отказ', 440: 'Отказ клиента',450: 'Закрыта',460: 'Истек срок действия решения Банка', 470: 'Ошибка в заявке',
             500: 'Отладка', 510: 'Отложена'}
 
 agents = {}
