@@ -12,9 +12,9 @@ import psycopg2
 
 from lib import read_config, l
 
-PRODUCTS = ['raiffeisen_loan_referral', 'raiffeisen_loan_lead_referral', 'raiffeisen_credit_card_referral',
-            'raiffeisen_credit_card_lead_referral']
-#PRODUCTS = ['alfabank_100_v2']
+#PRODUCTS = ['raiffeisen_loan_referral', 'raiffeisen_loan_lead_referral', 'raiffeisen_credit_card_referral',
+#            'raiffeisen_credit_card_lead_referral']
+PRODUCTS = ['alfabank_100_v2']
 BAD_FIELDS = ['_id','owner_id','client','callcenter_status_code']
 
 STATUSES = {0: 'Новая заявка', 100: 'Заявка отправлена в очередь', 110: 'Введен СМС код',
@@ -62,15 +62,14 @@ wb_rez = openpyxl.Workbook(write_only=True)
 ws_rez = []
 for i, product in enumerate(PRODUCTS):
     ws_rez.append(wb_rez.create_sheet(product))
+    xlsx_lines = []
     fields = []
     for j, coll in enumerate(colls.find({'product_alias': product})):
         #print('\n\ncoll\n', coll, '\n', agents[485])
-        if not j:
-            for field in coll.keys():
-                if field not in BAD_FIELDS:
-                    fields.append(field)
-            ws_rez[i].append(['ФИО Агента', 'Организация'] + fields)
-            #print('\n\nЗАГОЛОВОК\n', ['ФИО Агента', 'Организация'] + fields)
+        for field in coll.keys():
+            if field not in BAD_FIELDS and field not in fields:
+                fields.append(field)
+        #print('\n\nЗАГОЛОВОК\n', ['ФИО Агента', 'Организация'] + fields)
         #print('\nBEFORE agents\n',  agents[coll['owner_id']], '\n', coll['owner_id'])
         if agents.get(coll['owner_id']):
             fields_rez = [agents[coll['owner_id']][0], agents[coll['owner_id']][1]]
@@ -86,5 +85,8 @@ for i, product in enumerate(PRODUCTS):
                 else:
                     fields_rez.append(coll.get(field))
         #print('\n\nfields_rez\n',fields_rez)
-        ws_rez[i].append(fields_rez)
+        xlsx_lines.append(fields_rez)
+    ws_rez[i].append(['ФИО Агента', 'Организация'] + fields)
+    for xlsx_line in xlsx_lines:
+        ws_rez[i].append(xlsx_line)
 wb_rez.save(datetime.now().strftime('%Y-%m-%d_%H-%M') + 'отчеты.xlsx')
