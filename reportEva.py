@@ -15,15 +15,27 @@ from lib import read_config, l
 #PRODUCTS = ['raiffeisen_loan_referral', 'raiffeisen_loan_lead_referral', 'raiffeisen_credit_card_referral',
 #            'raiffeisen_credit_card_lead_referral']
 #PRODUCTS = ['alfabank_100_v2']
-PRODUCTS = ['rosfin_poll']
+PRODUCTS = ['openbank_debit_card_referral','openbank_loan_referral','openbank_refinancing_loan_referral',
+            'openbank_refinancing_mortgage_referral','openbank_credit_card_referral']
+#PRODUCTS = ['rosfin_poll']
 BAD_FIELDS = ['_id','owner_id','client','callcenter_status_code', 'question_list']
 
-STATUSES = {0: 'Новая заявка', 100: 'Заявка отправлена в очередь', 110: 'Введен СМС код',
+STATUSES = {0: 'Новая заявка', 20: 'Новая заявка', 100: 'Заявка отправлена в очередь', 110: 'Введен СМС код',
             120: 'Запрошена повторная СМС', 130: 'В процессе', 140: 'Одобрена', 150: 'Предварительно одобрена',
-            160: 'Заявка заполнена', 200: 'Завершено', 210: 'Займ выдан', 220: 'Займ выдан повторно',
-            230: 'Займ выдан через call-центр', 400: 'Удалена', 410: 'Неизвестный статус', 420: 'Ошибка выгрузки',
-            430: 'Отказ', 440: 'Отказ клиента',450: 'Закрыта',460: 'Истек срок действия решения Банка', 470: 'Ошибка в заявке',
-            500: 'Отладка', 510: 'Отложена'}
+            200: 'Завершено успешно', 400: 'Удалена', 410: 'Неизвестный статус', 430: 'Отказ',
+            10: 'Анкета отредактирована', 500: 'Отладка', 510: 'Отложена', 420: 'Ошибка выгрузки',
+            470: 'Ошибка в заявке', 600: 'Ожидает оплаты', 610: 'Оплачено', 620: 'Услуга получена',
+            210: 'Займ выдан', 220: 'Займ выдан повторно', 230: 'Займ выдан через call-центр', 160: 'Заявка заполнена',
+            170: 'Анкета успешно отправлена', 180: 'Ошибка отправки файлов', 190: 'Файлы успешно отправлены',
+            50: 'Ошибка', 310: 'Заявка отправлена', 320: 'Сканы отправлены', 330: 'Документы отправлены',
+            340: 'Ошибка', 350: 'Смс отправлена', 360: 'Завершено', 370: 'ЕСИА код отправлен', 440: 'Отказ клиента',
+            450: 'Закрыта', 460: 'Истек срок действия решения Банка', 240: 'Приложение установлено',
+            250: 'Счет пополнен', 260: 'Карта активирована', 1100: 'Заявка создана', 1200: 'Пройден прескоринг',
+            1210: 'Не пройден прескоринг', 1300: 'Пройден скоринг', 1310: 'Не пройден скоринг', 1500: 'Карта выдана',
+            1600: 'Карта активирована', 700: 'Карта не выдана', 710: 'Карта выдана', 750: 'Карта выдана',
+            760: 'Карта активирована', 800: 'Анкета успешно заполнена', 900: 'Одобрено', 910: 'Отклонено',
+            920: 'В ожидании', 990: 'Заявка передана', 2000: 'Принято', 2100: 'В обработке', 2200: 'Отклонено',
+            850: 'В обработке', 860: 'Дубль заявки', 870: 'Данные не валидны', 880: 'Заявка передана'}
 
 QUESTIONS = ['financial_state','financial_strategy','savings_strategy','savings_state','savings_target',
              'savings_method','savings_insurance','personal_credit','personal_credit_debt','personal_accounting',
@@ -32,6 +44,11 @@ QUESTIONS = ['financial_state','financial_strategy','savings_strategy','savings_
              'secured_rights','secured_rights_police','financial_education_level','financial_education_sufficient',
              'financial_education_update','education_conference','education_conference_theme',
              'information_source_list','financial_subject_school']
+
+WORK_FIELDS = {'organization': 'ООО "РИЧРИНГ"', 'organization_inn': '3025008374',
+               'position': 'Ассистент коммерческого директора', 'salary': 70000, 'contact_phone': '74951201145',
+               'additional_phone': '89894416401'}
+
 
 
 agents = {}
@@ -118,6 +135,7 @@ for i, product in enumerate(PRODUCTS):
     xlsx_lines = []
     fields = []
     first_anketa = True
+    first_work = True
     for j, coll in enumerate(colls.find({'product_alias': product})):
         #print('\n\ncoll\n', coll, '\n', agents[485])
         for field in coll.keys():
@@ -131,6 +149,7 @@ for i, product in enumerate(PRODUCTS):
         else:
             fields_rez = [str(coll['owner_id']), str(coll['owner_id'])]
         fields_anketa = {}
+        fields_work = {}
         # Если есть question_list то добавляем поля анкеты в общий список полей и формируем словарь значений
         if 'question_list' in coll.keys():
             if first_anketa:
@@ -148,11 +167,22 @@ for i, product in enumerate(PRODUCTS):
                 else:
                     fields_anketa[name_of_questions[quest]] = categories[quest].get(aqs[quest],str(aqs[quest]) +
                                                                                     'нет расшифровки в key.xlsx')
+        if 'work' in coll.keys():
+            if first_work:
+                fields += WORK_FIELDS.keys()
+                first_work = False
+            aqs = coll.get('work')
+            for quest in WORK_FIELDS.keys():
+                if aqs.get(quest, None):
+                    fields_work[quest] = aqs[quest]
         for field in fields:
             if field == 'state_code':
                 fields_rez.append(STATUSES[l(coll.get(field))])
             elif field in name_of_questions.values():
                 fields_rez.append(fields_anketa[field])
+            elif field in WORK_FIELDS.keys():
+                if fields_work.get(field, None):
+                    fields_rez.append(fields_work[field])
             else:
                 if str(type(coll.get(field))).find('str') < 0 and str(type(coll.get(field))).find('int') < 0:
                     fields_rez.append(str(coll.get(field)))

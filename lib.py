@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Общая библиотека функций
-# ver 1.12
+# ver 1.13
 
 import string
 import re
@@ -129,23 +129,31 @@ def format_phone(tel):
                 return None
         elif len(tel) == 10:
             return int('7' + tel)
-        elif len(tel) == 6:
-            return int('78512' + tel)
-        elif len(tel) == 5:
-            if tel[:1] == '2':
-                return int('7851231' + tel[1:])
-            if tel[:1] == '3':
-                return int('7851223' + tel[1:])
+        #elif len(tel) == 6:
+        #    return int('78512' + tel)
+        #elif len(tel) == 5:
+        #    if tel[:1] == '2':
+        #        return int('7851231' + tel[1:])
+        #    if tel[:1] == '3':
+        #        return int('7851223' + tel[1:])
         else:
             return None
 
 def fine_phone(t):
-    t = str(format_phone(t))
-    return '+' + t[0] + '(' + t[1:4] + ')' + t[4:7] + '-' + t[7:9] + '-' + t[9:]
+    if format_phone(t):
+        t = str(format_phone(t))
+        return '+' + t[0] + '(' + t[1:4] + ')' + t[4:7] + '-' + t[7:9] + '-' + t[9:]
+    else:
+        return '0'
 
 def fine_snils(t):
     s = '{:=011d}'.format(l(t))
     return s[:3]+'-'+s[3:6]+'-'+s[6:9]+' '+s[9:11]
+
+def fine_snils_(t):
+    s = '{:=011d}'.format(l(t))
+    return s[:3]+'-'+s[3:6]+'-'+s[6:9]+'_'+s[9:11]
+
 
 def read_config(filename='config.ini', section='mysql'):
     """ Read database configuration file and return a dictionary object
